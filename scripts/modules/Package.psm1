@@ -132,6 +132,17 @@ function New-MsixPackage {
     Write-Host "Staging: $StagingPath" -ForegroundColor Gray
     Write-Host "Output: $OutputPath" -ForegroundColor Gray
     
+    # Validate staging directory contents
+    if (-not (Test-Path (Join-Path $StagingPath "AppxManifest.xml"))) {
+        Write-Error "AppxManifest.xml not found in staging directory"
+        return $false
+    }
+    
+    Write-Host "Staging directory contents:" -ForegroundColor Gray
+    Get-ChildItem $StagingPath | ForEach-Object {
+        Write-Host "  $($_.Name)" -ForegroundColor Gray
+    }
+    
     try {
         # Find MakeAppx.exe
         $makeAppxPaths = @(
@@ -157,9 +168,13 @@ function New-MsixPackage {
         
         # Create MSIX package
         Write-Host "Creating package..." -ForegroundColor Yellow
-        & $makeAppx pack /d "$StagingPath" /p "$OutputPath" /o
+        Write-Host "  Command: makeappx pack /d `"$StagingPath`" /p `"$OutputPath`" /o" -ForegroundColor Gray
+        
+        $makeAppxOutput = & $makeAppx pack /d "$StagingPath" /p "$OutputPath" /o 2>&1
         
         if ($LASTEXITCODE -ne 0) {
+            Write-Host "MakeAppx output:" -ForegroundColor Red
+            $makeAppxOutput | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
             Write-Error "MakeAppx failed with exit code $LASTEXITCODE"
             return $false
         }
