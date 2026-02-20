@@ -30,8 +30,8 @@
         Description="{{DESCRIPTION}}"
         BackgroundColor="transparent"
         Square150x150Logo="{{SQUARE_150X150_LOGO}}"
-        Square44x44Logo="{{SQUARE_44X44_LOGO}}"
-        Wide310x150Logo="{{WIDE_310X150_LOGO}}">
+        Square44x44Logo="{{SQUARE_44X44_LOGO}}">
+        <uap:DefaultTile Wide310x150Logo="{{WIDE_310X150_LOGO}}" />
       </uap:VisualElements>
     </Application>
   </Applications>
