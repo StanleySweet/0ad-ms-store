@@ -1,0 +1,37 @@
+{
+  "release": {
+    "baseUrl": "https://releases.wildfiregames.com",
+    "latestStablePattern": "0ad-{version}-win32.exe",
+    "version": "0.28.0",
+    "architecture": "x64"
+  },
+  "package": {
+    "name": "0AD",
+    "publisher": "Software in the Public Interest",
+    "publisherDisplayName": "Software in the Public Interest",
+    "displayName": "0 A.D. Empires Ascendant",
+    "description": "A free, open-source game of ancient warfare",
+    "identityName": "SoftwareinthePublicIntere.0A.D.-EmpiresAscendant",
+    "identityPublisher": "CN=61C41FB8-E221-43E4-A64D-9CADC6D2BD51"
+  },
+  "paths": {
+    "download": "output/download",
+    "extracted": "output/extracted",
+    "staged": "output/staged",
+    "package": "output/package"
+  },
+  "msix": {
+    "version": "0.28.0.0",
+    "minVersion": "10.0.19041.0",
+    "targetDeviceFamily": "Windows.Desktop",
+    "capabilities": [
+      "internetClient"
+    ]
+  },
+  "assets": {
+    "square150x150Logo": "assets/logos/Square150x150Logo.png",
+    "square44x44Logo": "assets/logos/Square44x44Logo.png",
+    "wide310x150Logo": "assets/logos/Wide310x150Logo.png",
+    "storeLogo": "assets/logos/StoreLogo.png"
+  }
+}

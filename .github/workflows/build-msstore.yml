@@ -1,0 +1,176 @@
+name: Build 0 A.D. MS Store Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '0 A.D. version to package (e.g., 0.28.0)'
+        required: false
+        default: ''
+  push:
+    branches:
+      - main
+    paths:
+      - 'config/**'
+      - 'scripts/**'
+      - '.github/workflows/**'
+  schedule:
+    # Run weekly to check for new releases
+    - cron: '0 0 * * 0'
+
+env:
+  MSIX_OUTPUT_NAME: '0AD-MSStore.msix'
+
+jobs:
+  build:
+    name: Build MSIX Package
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup build info
+        id: build-info
+        shell: pwsh
+        run: |
+          $config = Get-Content config/config.json -Raw | ConvertFrom-Json
+          $version = "${{ github.event.inputs.version }}"
+          
+          if ([string]::IsNullOrEmpty($version)) {
+            $version = $config.release.version
+          }
+          
+          Write-Host "Building version: $version"
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+          echo "package-name=0AD-$version.msix" >> $env:GITHUB_OUTPUT
+      
+      - name: Update config with version
+        if: github.event.inputs.version != ''
+        shell: pwsh
+        run: |
+          $version = "${{ steps.build-info.outputs.version }}"
+          $config = Get-Content config/config.json -Raw | ConvertFrom-Json
+          $config.release.version = $version
+          
+          # Update MSIX version (ensure 4-part version)
+          $versionParts = $version.Split('.')
+          if ($versionParts.Length -eq 3) {
+            $config.msix.version = "$version.0"
+          } else {
+            $config.msix.version = $version
+          }
+          
+          $config | ConvertTo-Json -Depth 10 | Set-Content config/config.json
+          Write-Host "Updated config with version: $version"
+      
+      - name: Display environment info
+        shell: pwsh
+        run: |
+          Write-Host "=== Environment Information ===" -ForegroundColor Cyan
+          Write-Host "OS: $([System.Environment]::OSVersion.VersionString)"
+          Write-Host "PowerShell: $($PSVersionTable.PSVersion)"
+          Write-Host "Working Directory: $(Get-Location)"
+          Write-Host ""
+          
+          # Check for required tools
+          $7zip = Get-Command 7z.exe -ErrorAction SilentlyContinue
+          if ($7zip) {
+            Write-Host "✓ 7-Zip: $($7zip.Source)" -ForegroundColor Green
+          } else {
+            Write-Host "✗ 7-Zip: Not found" -ForegroundColor Red
+          }
+          
+          $makeappx = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\makeappx.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($makeappx) {
+            Write-Host "✓ MakeAppx: $($makeappx.FullName)" -ForegroundColor Green
+          } else {
+            Write-Host "✗ MakeAppx: Not found" -ForegroundColor Red
+          }
+      
+      - name: Create output directories
+        shell: pwsh
+        run: |
+          $dirs = @(
+            "output/download",
+            "output/extracted",
+            "output/staged",
+            "output/package"
+          )
+          foreach ($dir in $dirs) {
+            New-Item -ItemType Directory -Path $dir -Force | Out-Null
+          }
+          Write-Host "✓ Output directories created" -ForegroundColor Green
+      
+      - name: Run build script
+        shell: pwsh
+        run: |
+          .\scripts\Build-0ADMSStore.ps1 -Verbose
+        env:
+          # Certificate secrets (if available)
+          CERTIFICATE_BASE64: ${{ secrets.CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+      
+      - name: List output files
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host "`n=== Output Files ===" -ForegroundColor Cyan
+          if (Test-Path "output/package") {
+            Get-ChildItem "output/package" -Recurse | ForEach-Object {
+              $size = if ($_.PSIsContainer) { "" } else { " ($([math]::Round($_.Length / 1MB, 2)) MB)" }
+              Write-Host "$($_.FullName)$size"
+            }
+          } else {
+            Write-Host "No output files found" -ForegroundColor Yellow
+          }
+      
+      - name: Upload MSIX package
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: 0AD-MSStore-Package-${{ steps.build-info.outputs.version }}
+          path: output/package/*.msix
+          retention-days: 30
+          if-no-files-found: error
+      
+      - name: Upload build logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-logs-${{ github.run_number }}
+          path: |
+            output/staged/AppxManifest.xml
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Create release summary
+        if: success()
+        shell: pwsh
+        run: |
+          $version = "${{ steps.build-info.outputs.version }}"
+          $packagePath = Get-ChildItem "output/package/*.msix" | Select-Object -First 1
+          
+          if ($packagePath) {
+            $size = [math]::Round($packagePath.Length / 1MB, 2)
+            
+            @"
+          ## ✓ Build Successful
+          
+          **Version**: $version
+          **Package**: $($packagePath.Name)
+          **Size**: $size MB
+          
+          ### Next Steps
+          1. Download the MSIX artifact from this workflow run
+          2. Test the package locally (requires developer mode or proper certificate)
+          3. Submit to Microsoft Partner Center for Store publication
+          
+          ### Testing Locally
+          ``````powershell
+          # Install the package (requires certificate or developer mode)
+          Add-AppxPackage -Path "$($packagePath.Name)"
+          ``````
+          
+          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding UTF8
+          }

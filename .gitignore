@@ -1,0 +1,29 @@
+# Ignore build outputs
+output/
+
+# Ignore downloaded installers
+*.exe
+
+# Ignore certificates
+*.pfx
+*.cer
+*.p12
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/

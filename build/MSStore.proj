@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProjectName>0AD-MSStore</ProjectName>
+    <OutputPath>$(MSBuildProjectDirectory)\..\output\package</OutputPath>
+    <IntermediateOutputPath>$(MSBuildProjectDirectory)\..\output\obj</IntermediateOutputPath>
+    <StagingPath>$(MSBuildProjectDirectory)\..\output\staged</StagingPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AppxManifest Include="$(StagingPath)\AppxManifest.xml" />
+  </ItemGroup>
+
+  <Target Name="Clean">
+    <Message Text="Cleaning output directories..." Importance="high" />
+    <RemoveDir Directories="$(OutputPath);$(IntermediateOutputPath)" />
+  </Target>
+
+  <Target Name="Build" DependsOnTargets="ValidatePackage">
+    <Message Text="Build completed successfully" Importance="high" />
+  </Target>
+
+  <Target Name="ValidatePackage">
+    <Message Text="Validating package structure..." Importance="high" />
+    <Error Condition="!Exists('$(StagingPath)\AppxManifest.xml')" Text="AppxManifest.xml not found in staging directory" />
+    <Error Condition="!Exists('$(StagingPath)\binaries')" Text="Game binaries not found in staging directory" />
+    <Message Text="Package structure is valid" Importance="high" />
+  </Target>
+
+  <Target Name="Package" DependsOnTargets="Build">
+    <Message Text="MSBuild project configured. Use PowerShell script for packaging." Importance="high" />
+  </Target>
+
+</Project>
