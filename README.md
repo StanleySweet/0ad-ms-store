@@ -155,7 +155,7 @@ on:
 
 **Download fails**: Check the version exists at https://releases.wildfiregames.com/
 
-**Extraction fails**: Shouldn't happen on GitHub runners (7-Zip is pre-installed)
+**Extraction method**: win32 installers use 7-Zip extraction. win64 installers use solid LZMA compression, so the script runs a silent install (/S flag) and copies the files. Both methods work fine on GitHub Actions.
 
 **Package won't install**: Enable Developer Mode in Windows settings
 
