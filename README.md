@@ -1,6 +1,6 @@
 # 0 A.D. MS Store Packager
 
-Builds MSIX packages for [0 A.D.](https://play0ad.com/) automatically using GitHub Actions.
+Builds x64 MSIX packages for [0 A.D.](https://play0ad.com/) automatically using GitHub Actions.
 
 Downloads the NSIS installer from releases.wildfiregames.com, extracts it, and creates an MSIX package ready for Store submission. Everything runs on GitHub's Windows runners, so you can manage this from any OS.
 

@@ -6,7 +6,9 @@ function Get-0ADInstaller {
         [Parameter(Mandatory=$true)]
         [string]$OutputPath,
         
-        [string]$BaseUrl = "https://releases.wildfiregames.com"
+        [string]$BaseUrl = "https://releases.wildfiregames.com",
+        
+        [string]$Architecture = "x64"
     )
     
     Write-Host "=== Downloading 0 A.D. Installer ===" -ForegroundColor Cyan
@@ -17,11 +19,13 @@ function Get-0ADInstaller {
         New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
     }
     
-    # Construct download URL
-    $filename = "0ad-$Version-win32.exe"
+    # Construct download URL based on architecture
+    $archSuffix = if ($Architecture -eq "x64") { "win64" } else { "win32" }
+    $filename = "0ad-$Version-$archSuffix.exe"
     $url = "$BaseUrl/$filename"
     
     Write-Host "Version: $Version" -ForegroundColor Gray
+    Write-Host "Architecture: $Architecture ($archSuffix)" -ForegroundColor Gray
     Write-Host "URL: $url" -ForegroundColor Gray
     Write-Host "Output: $OutputPath" -ForegroundColor Gray
     

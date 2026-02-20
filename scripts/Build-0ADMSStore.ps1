@@ -82,8 +82,9 @@ $extractPath = Join-Path $projectRoot $config.paths.extracted
 $stagingPath = Join-Path $projectRoot $config.paths.staged
 $packagePath = Join-Path $projectRoot $config.paths.package
 
-$installerFile = Join-Path $downloadPath "0ad-$($config.release.version)-win32.exe"
-$msixFile = Join-Path $packagePath "0AD-$($config.release.version).msix"
+$archSuffix = if ($config.release.architecture -eq "x64") { "win64" } else { "win32" }
+$installerFile = Join-Path $downloadPath "0ad-$($config.release.version)-$archSuffix.exe"
+$msixFile = Join-Path $packagePath "0AD-$($config.release.version)-$($config.release.architecture).msix"
 
 # Clean output directories if requested
 if ($CleanOutput) {
@@ -110,7 +111,8 @@ if (-not $SkipDownload) {
     $downloadSuccess = Get-0ADInstaller `
         -Version $config.release.version `
         -OutputPath $installerFile `
-        -BaseUrl $config.release.baseUrl
+        -BaseUrl $config.release.baseUrl `
+        -Architecture $config.release.architecture
     
     if (-not $downloadSuccess) {
         Write-Error "Download failed"

@@ -6,7 +6,8 @@
 
   <Identity Name="{{IDENTITY_NAME}}"
             Publisher="{{IDENTITY_PUBLISHER}}"
-            Version="{{VERSION}}" />
+            Version="{{VERSION}}"
+            ProcessorArchitecture="x64" />
 
   <Properties>
     <DisplayName>{{DISPLAY_NAME}}</DisplayName>
