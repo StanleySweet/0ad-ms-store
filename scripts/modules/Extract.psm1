@@ -105,4 +105,44 @@ function Expand-NSISInstaller {
     }
 }
 
-Export-ModuleMember -Function Expand-NSISInstaller
+function Remove-ProblematicShortcuts {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$ExtractedPath
+    )
+    
+    Write-Host "=== Cleaning Up Problematic Shortcuts ===" -ForegroundColor Cyan
+    
+    try {
+        # Remove .lnk shortcut files that were extracted
+        $shortcutFiles = @(
+            "*.lnk",
+            "Web site.url",
+            "OpenLogsFolder.bat",
+            "OpenLogsFolder.vbs"
+        )
+        
+        Write-Host "Removing shortcut files..." -ForegroundColor Yellow
+        foreach ($pattern in $shortcutFiles) {
+            $files = Get-ChildItem $ExtractedPath -Filter $pattern -Recurse -ErrorAction SilentlyContinue
+            foreach ($file in $files) {
+                try {
+                    Remove-Item $file.FullName -Force -ErrorAction SilentlyContinue
+                    Write-Host "  Removed: $($file.Name)" -ForegroundColor Gray
+                }
+                catch {
+                    Write-Warning "Could not remove $($file.Name): $_"
+                }
+            }
+        }
+        
+        Write-Host "✓ Shortcut cleanup complete" -ForegroundColor Green
+        return $true
+    }
+    catch {
+        Write-Warning "Error during shortcut cleanup: $_"
+        return $true  # Don't fail the entire extraction for cleanup issues
+    }
+}
+
+Export-ModuleMember -Function Expand-NSISInstaller, Remove-ProblematicShortcuts

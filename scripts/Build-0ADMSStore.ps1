@@ -137,6 +137,10 @@ if (-not $SkipExtraction) {
         Write-Error "Extraction failed"
         exit 1
     }
+    
+    # Step 2a: Clean up problematic shortcuts from extracted files
+    Write-Host ""
+    Remove-ProblematicShortcuts -ExtractedPath $extractPath
 } else {
     Write-Host "`nSkipping extraction (using existing files)" -ForegroundColor Yellow
     if (-not (Test-Path $extractPath)) {
