@@ -147,30 +147,6 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
 
-      - name: Create GitHub Release
-        if: success()
-        uses: softprops/action-gh-release@v1
-        with:
-          files: output/package/*.msix
-          tag_name: v${{ steps.build-info.outputs.version }}
-          name: 0 A.D. MS Store v${{ steps.build-info.outputs.version }}
-          body: |
-            ## 0 A.D. MS Store Package
-
-            **Version**: ${{ steps.build-info.outputs.version }}
-
-            Ready for submission to Microsoft Partner Center.
-
-            ### Files
-            - `0AD-${{ steps.build-info.outputs.version }}-x64.msix` - MS Store package
-
-            ### Next Steps
-            1. Download the MSIX file from this release
-            2. Submit to [Microsoft Partner Center](https://partner.microsoft.com/dashboard)
-            3. Once approved, it will be available on [Microsoft Store](https://www.microsoft.com/store/apps/9N5VVJR2DZ9W)
-          draft: false
-          prerelease: false
-
       - name: Create release summary
         if: success()
         shell: pwsh
