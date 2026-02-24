@@ -18,6 +18,9 @@ on:
     # Run weekly to check for new releases
     - cron: '0 0 * * 0'
 
+permissions:
+  contents: write
+
 env:
   MSIX_OUTPUT_NAME: '0AD-MSStore.msix'
 
